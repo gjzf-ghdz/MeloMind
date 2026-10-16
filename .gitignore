@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 运行时用户数据（服务端首次启动自动生成）
+backend/users.json
+backend/history.json
+backend/favorites.json
+backend/chat_logs.jsonl
+backend/preview_cache.json
+
+# 部署密钥与打包产物
+backend/deploy_token.txt
+melomind_deploy.zip
+
+# 大体积曲库数据与备份（见 README 第四节）
+music_database/music_database.json
+music_database/*.bak

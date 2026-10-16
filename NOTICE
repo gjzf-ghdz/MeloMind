@@ -1,0 +1,11 @@
+MeloMind · 音此刻
+Copyright 2026 音此刻团队 (MeloMind Team)
+
+本项目采用 Apache License 2.0 许可证（见 LICENSE）。
+
+第三方服务与数据来源声明：
+- 曲库元数据通过 QQ 音乐公开检索接口采集，版权归腾讯音乐娱乐集团及版权方所有；
+  完整曲库不随本仓库分发，仓库仅包含建库管道与说明文档。
+- 在线试听片段由 Apple iTunes Search API 官方接口提供（仅转发 30 秒 previewUrl 直链）。
+- 可选接入智谱 AI 开放平台（GLM）或其它 OpenAI 兼容大模型服务用于状态理解；
+  未配置 API Key 时系统以纯词典模式完全离线运行。

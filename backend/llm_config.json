@@ -1,0 +1,6 @@
+{
+  "api_key": "",
+  "base_url": "https://open.bigmodel.cn/api/paas/v4",
+  "model": "glm-4-flash",
+  "_说明": "在 api_key 填入你的智谱 API Key（https://open.bigmodel.cn 控制台获取），保存后重启服务即启用大模型理解；留空则使用内置词典匹配模式（系统可完全离线运行）。也可换其他 OpenAI 兼容服务：DeepSeek base_url=https://api.deepseek.com model=deepseek-chat"
+}

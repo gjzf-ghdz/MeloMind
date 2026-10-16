@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeloMind - 自适应音乐推荐</title>
+<link rel="stylesheet" href="style.css?v=20260914d">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-icon">&#9835;</span> MeloMind</div>
+    <div class="status" id="statusBar"><span class="dot"></span> 就绪</div>
+    <!-- 构建标记：用于确认线上是否已更新到最新版本 -->
+    <div class="build-tag" id="buildTag">构建版本 20260914d</div>
+
+    <div class="user-info" id="userInfo">
+      <div class="user-info-guest">
+        <span class="user-info-name">&#128100; 未登录</span>
+        <button onclick="openAuthModal('login')" class="user-info-btn">登录 / 注册</button>
+      </div>
+      <div class="user-info-logged" style="display:none">
+        <span class="user-info-name user-info-name-link" id="userInfoName"
+              title="点击进入个人中心" onclick="openProfileModal()">&#128100; --</span>
+        <button onclick="doLogout()" class="user-info-btn">登出</button>
+      </div>
+    </div>
+
+    <div class="state-panel" id="statePanel">
+      <div class="label">当前状态</div>
+      <div class="state-card">
+        <div class="row"><span class="tag">任务</span><span id="stTask">--</span></div>
+        <div class="row"><span class="tag">情绪</span><span id="stEmotion">--</span></div>
+        <div class="row"><span class="tag">策略</span><span id="stPriority">--</span></div>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="label">&#128161; 试试这样说</div>
+      <button onclick="send('写代码焦虑脑子乱')">&#128187; 编程 + 焦虑</button>
+      <button onclick="send('刚起床要健身但很累')">&#127947; 运动 + 疲惫</button>
+      <button onclick="send('复习考试想保持专注')">&#128218; 学习 + 专注</button>
+      <button onclick="send('心情好开车上班路上')">&#128663; 通勤 + 开心</button>
+      <button onclick="send('做创意设计脑子空白没灵感')">&#127912; 创意枯竭</button>
+      <button onclick="send('心情低落需要安慰')">&#128148; 情绪低落</button>
+      <button onclick="send('我在看世界杯')">&#9917; 看球 / 赛事</button>
+      <button onclick="send('今晚去派对嗨一下')">&#127881; 派对 / 庆祝</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <section class="chat">
+      <div class="chat-top">
+        <h2>&#128172; 对话</h2>
+        <div class="chat-top-actions">
+          <a href="javascript:void(0)" onclick="openDouyinAI()" class="ai-top-btn" title="用抖音 AI 生成专属音乐">
+            <span>&#127925;</span><span>抖音 AI 生成专属音乐</span><span class="ai-top-arrow">&#10148;</span>
+          </a>
+          <button onclick="clearAll()" class="btn-text">清空</button>
+        </div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg sys">
+          <p>&#128075; 你好！告诉我你正在做什么任务，心情如何？</p>
+          <p>我会分析你的状态并推荐匹配的歌曲，点击卡片即可试听 30 秒。</p>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="描述你的任务和心情..."
+               onkeydown="if(event.key==='Enter')send()">
+        <button onclick="send()" id="sendBtn">&#10148;</button>
+      </div>
+    </section>
+
+    <section class="recs">
+      <div class="recs-top">
+        <h2>&#127925; 为你推荐</h2>
+        <span class="count" id="songCount"></span>
+      </div>
+      <div class="analysis-banner" id="banner" style="display:none"></div>
+
+      <div class="recs-scroll">
+
+        <!-- 音乐参数卡片 -->
+        <div class="param-card" id="paramCard" style="display:none">
+          <div class="param-header">
+            <span class="param-icon">&#127919;</span>
+            <span>适配你状态的音乐参数</span>
+          </div>
+          <div class="param-body">
+            <div class="param-row">
+              <span class="param-label">推荐风格</span>
+              <span class="param-value" id="paramGenres">--</span>
+            </div>
+            <div class="param-row">
+              <span class="param-label">情绪目标</span>
+              <span class="param-value accent" id="paramMood">--</span>
+            </div>
+            <div class="param-row">
+              <span class="param-label">能量等级</span>
+              <div class="param-energy" id="paramEnergy"></div>
+            </div>
+            <div class="param-row">
+              <span class="param-label">节奏范围</span>
+              <span class="param-value" id="paramTempo">--</span>
+            </div>
+            <div class="param-row">
+              <span class="param-label">音乐类型</span>
+              <span class="param-value" id="paramInstrumental">--</span>
+            </div>
+            <div class="param-row param-reason">
+              <span class="param-label">策略说明</span>
+              <span class="param-value" id="paramExplain">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="song-grid" id="songGrid">
+          <div class="empty">
+            <div class="empty-icon">&#127926;</div>
+            <p>在左侧说说你的状态<br>我来为你推荐合适的音乐</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- 登录 / 注册弹窗 -->
+<div id="authModal" class="modal-overlay" style="display:none">
+  <div class="auth-card">
+    <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">登录</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">注册</button>
+    </div>
+
+    <!-- 登录表单 -->
+    <form class="auth-form" id="loginForm" onsubmit="event.preventDefault();doLogin()">
+      <div class="auth-field">
+        <label>用户名</label>
+        <input type="text" id="loginUsername" class="auth-input" placeholder="3-20 位字母/数字/下划线" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>密码</label>
+        <input type="password" id="loginPassword" class="auth-input" placeholder="6-32 位" autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-btn">登录</button>
+    </form>
+
+    <!-- 注册表单 -->
+    <form class="auth-form" id="registerForm" onsubmit="event.preventDefault();doRegister()" style="display:none">
+      <div class="auth-field">
+        <label>用户名</label>
+        <input type="text" id="regUsername" class="auth-input" placeholder="3-20 位字母/数字/下划线" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>密码</label>
+        <input type="password" id="regPassword" class="auth-input" placeholder="6-32 位" autocomplete="new-password">
+      </div>
+      <div class="auth-field">
+        <label>确认密码</label>
+        <input type="password" id="regPassword2" class="auth-input" placeholder="再次输入密码" autocomplete="new-password">
+      </div>
+      <button type="submit" class="auth-btn">注册</button>
+    </form>
+
+    <div class="auth-error" id="authError" style="display:none"></div>
+  </div>
+</div>
+
+<!-- 个人中心弹窗（资料与安全 / 我的收藏夹 / 搜索历史） -->
+<div id="profileModal" class="modal-overlay" style="display:none">
+  <div class="modal-wrap">
+    <button class="modal-close-out" onclick="closeProfileModal()">&times;</button>
+    <div class="modal fav-modal profile-modal">
+      <div class="fav-modal-header">
+        <h2>&#128100; 个人中心</h2>
+        <span class="count" id="profileUserLabel"></span>
+      </div>
+
+      <div class="profile-tabs">
+        <button class="auth-tab active" id="ptabAccount" onclick="switchProfileTab('account')">&#128100; 资料与安全</button>
+        <button class="auth-tab" id="ptabFav" onclick="switchProfileTab('favorites')">&#10084; 我的收藏夹 <span class="profile-tab-count" id="profileFavCount">0</span></button>
+        <button class="auth-tab" id="ptabHist" onclick="switchProfileTab('history')">&#128336; 搜索历史 <span class="profile-tab-count" id="profileHistCount">0</span></button>
+      </div>
+
+      <!-- 资料与安全 -->
+      <div class="profile-pane" id="profilePaneAccount">
+        <div class="profile-info-grid">
+          <div class="profile-info-item"><span class="profile-info-label">用户名</span><span class="profile-info-value" id="profileUsername">--</span></div>
+          <div class="profile-info-item"><span class="profile-info-label">手机号</span><span class="profile-info-value" id="profilePhone">--</span></div>
+          <div class="profile-info-item"><span class="profile-info-label">注册时间</span><span class="profile-info-value" id="profileCreatedAt">--</span></div>
+        </div>
+
+        <div class="profile-section">
+          <h3>&#128100; 修改用户名</h3>
+          <form class="auth-form" onsubmit="event.preventDefault();doChangeUsername()">
+            <div class="auth-field">
+              <label>新用户名</label>
+              <input type="text" id="pfNewUsername" class="auth-input" placeholder="3-20 位字母/数字/下划线" autocomplete="username">
+            </div>
+            <div class="auth-field">
+              <label>当前密码（确认身份）</label>
+              <input type="password" id="pfUsernamePassword" class="auth-input" placeholder="输入当前密码以确认" autocomplete="current-password">
+            </div>
+            <button type="submit" class="auth-btn" id="pfUsernameBtn">保存新用户名</button>
+          </form>
+        </div>
+
+        <div class="profile-section">
+          <h3>&#128273; 修改密码</h3>
+          <form class="auth-form" onsubmit="event.preventDefault();doChangePassword()">
+            <div class="auth-field">
+              <label>原密码</label>
+              <input type="password" id="pfOldPassword" class="auth-input" placeholder="输入原密码" autocomplete="current-password">
+            </div>
+            <div class="auth-field">
+              <label>新密码</label>
+              <input type="password" id="pfNewPassword" class="auth-input" placeholder="6-32 位" autocomplete="new-password">
+            </div>
+            <div class="auth-field">
+              <label>确认新密码</label>
+              <input type="password" id="pfNewPassword2" class="auth-input" placeholder="再次输入新密码" autocomplete="new-password">
+            </div>
+            <button type="submit" class="auth-btn" id="pfPasswordBtn">保存新密码</button>
+          </form>
+        </div>
+
+        <div class="profile-msg" id="profileMsg" style="display:none"></div>
+      </div>
+
+      <!-- 我的收藏夹 -->
+      <div class="fav-modal-body profile-pane" id="profilePaneFav" style="display:none">
+        <div class="fav-empty">
+          <div class="fav-empty-icon">&#9835;</div>
+          <p>还没有收藏的歌曲<br>在推荐结果中点击 &#10084 收藏喜欢的音乐</p>
+        </div>
+      </div>
+
+      <!-- 搜索历史 -->
+      <div class="profile-hist-body profile-pane" id="profilePaneHist" style="display:none">
+        <div class="fav-empty">
+          <div class="fav-empty-icon">&#128336;</div>
+          <p>还没有搜索记录<br>发送消息后这里会显示你的搜索历史</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI 音乐创作工坊 -->
+<div id="aiStudioModal" class="modal-overlay" style="display:none">
+  <div class="modal ai-studio-modal">
+    <button class="modal-close" onclick="closeAiStudio()">&times;</button>
+
+    <div class="ai-studio-header">
+      <div class="ai-studio-icon">&#127925;</div>
+      <div>
+        <h2>AI 音乐创作工坊</h2>
+        <p class="ai-studio-sub">描述你的场景，AI 为你定制专属音乐的创作提示词</p>
+      </div>
+    </div>
+
+    <!-- 步骤指示 -->
+    <div class="ai-studio-steps">
+      <div class="ai-studio-step active" id="aiStepDot1"><span class="step-num">1</span><span class="step-label">描述场景</span></div>
+      <div class="ai-studio-step-line" id="aiStepLine"></div>
+      <div class="ai-studio-step" id="aiStepDot2"><span class="step-num">2</span><span class="step-label">生成提示词</span></div>
+    </div>
+
+    <!-- 步骤 1：场景描述 -->
+    <div class="ai-studio-pane" id="aiStudioPane1">
+      <div class="ai-studio-hint" id="aiStudioHint" style="display:none"></div>
+      <textarea id="aiStudioInput" class="ai-studio-textarea" rows="4"
+                placeholder="描述你想创作的音乐场景，例如：深夜写代码有点焦虑，想要一段轻电子风格的专注音乐..."></textarea>
+      <div class="ai-studio-quick" id="aiStudioQuick" style="display:none">
+        <button type="button" onclick="aiStudioUseContext()">&#128269; 使用当前对话状态</button>
+      </div>
+      <button class="ai-studio-btn-primary" id="aiStudioGenBtn" onclick="generateMusicPrompt()">
+        &#10024; 生成创作提示词
+      </button>
+    </div>
+
+    <!-- 步骤 2：提示词结果 -->
+    <div class="ai-studio-pane" id="aiStudioPane2" style="display:none">
+      <div class="ai-prompt-grid" id="aiPromptGrid"></div>
+
+      <div class="ai-prompt-full-wrap">
+        <div class="ai-prompt-full-label">完整提示词（可编辑）</div>
+        <textarea id="aiPromptFull" class="ai-studio-textarea" rows="9"></textarea>
+      </div>
+
+      <div class="ai-studio-actions">
+        <button class="ai-studio-btn-ghost" onclick="aiStudioBack()">&#8592; 重新描述</button>
+        <button class="ai-studio-btn-ghost" onclick="copyMusicPrompt()">&#128203; 复制提示词</button>
+        <button class="ai-studio-btn-primary" onclick="goDouyinStudio()">
+          &#127916; 前往抖音 AI 音乐创作
+        </button>
+      </div>
+      <p class="ai-studio-note">&#127908; 本工坊目前仅适用于制作纯音乐（无人声）歌曲，提示词将按纯音乐结构生成<br>点击跳转后自动带上提示词，在抖音平台生成你的专属纯音乐</p>
+    </div>
+  </div>
+</div>
+
+<!-- 欢迎弹窗（首次访问） -->
+<div id="welcomeModal" class="modal-overlay" style="display:none">
+  <div class="modal welcome-modal">
+    <div class="welcome-hero">
+      <div class="welcome-logo-icon">♪</div>
+      <div class="welcome-logo-text">MeloMind</div>
+      <div class="welcome-subtitle">自适应音乐推荐系统</div>
+    </div>
+    <div class="welcome-body">
+      <p class="welcome-greeting">欢迎来到 MeloMind！🎵</p>
+      <p class="welcome-desc">
+        告诉我你正在做什么、心情如何，我会理解你的状态，
+        从 <strong>500,000+</strong> 首曲库中为你推荐最合适的音乐。
+      </p>
+      <div class="welcome-features">
+        <div class="welcome-feature">
+          <span class="welcome-feature-icon">💬</span>
+          <div><strong>对话式推荐</strong><br><span>一句话描述场景，AI 自动匹配</span></div>
+        </div>
+        <div class="welcome-feature">
+          <span class="welcome-feature-icon">🧠</span>
+          <div><strong>情绪感知</strong><br><span>识别焦虑、疲惫，推荐调节音乐</span></div>
+        </div>
+        <div class="welcome-feature">
+          <span class="welcome-feature-icon">🎯</span>
+          <div><strong>16 大场景</strong><br><span>编程/学习/健身/游戏全覆盖</span></div>
+        </div>
+        <div class="welcome-feature">
+          <span class="welcome-feature-icon">❤️</span>
+          <div><strong>个人中心</strong><br><span>收藏喜欢的歌，管理搜索历史</span></div>
+        </div>
+      </div>
+      <p class="welcome-hint">注册账号后，还能解锁收藏夹和历史记录功能哦 ✨</p>
+    </div>
+    <div class="welcome-actions">
+      <button class="welcome-btn-secondary" onclick="closeWelcomeModal(true)">随便看看</button>
+      <button class="welcome-btn-primary" onclick="closeWelcomeModal(true);openAuthModal('register')">立即注册</button>
+    </div>
+  </div>
+</div>
+
+<!-- 音乐偏好调查弹窗（注册后触发） -->
+<div id="prefSurvey" class="modal-overlay" style="display:none">
+  <div class="pref-survey-box">
+    <div class="pref-survey-header">
+      <span class="pref-survey-icon">🎵</span>
+      <h3>告诉我们你的音乐偏好</h3>
+      <p class="pref-survey-sub">帮我们为你推荐更合口味的歌曲（可随时在个人中心修改）</p>
+    </div>
+    <div class="pref-survey-body">
+      <!-- 问题1：语言偏好 -->
+      <div class="pref-q">
+        <div class="pref-q-title">① 你更偏好哪种语言的歌曲？</div>
+        <div class="pref-options" data-pref="language">
+          <label class="pref-option"><input type="radio" name="pref-language" value="chinese"><span>中文歌</span></label>
+          <label class="pref-option"><input type="radio" name="pref-language" value="english"><span>英文/日韩等外文</span></label>
+          <label class="pref-option"><input type="radio" name="pref-language" value="both" checked><span>都可以</span></label>
+        </div>
+      </div>
+      <!-- 问题2：纯音乐偏好 -->
+      <div class="pref-q">
+        <div class="pref-q-title">② 你更偏好？</div>
+        <div class="pref-options" data-pref="instrumental">
+          <label class="pref-option"><input type="radio" name="pref-instrumental" value="yes"><span>偏好纯音乐</span></label>
+          <label class="pref-option"><input type="radio" name="pref-instrumental" value="no"><span>偏好人声歌曲</span></label>
+          <label class="pref-option"><input type="radio" name="pref-instrumental" value="both" checked><span>都可以</span></label>
+        </div>
+      </div>
+      <!-- 问题3：风格偏好 -->
+      <div class="pref-q">
+        <div class="pref-q-title">③ 你喜欢哪些音乐风格？（可多选）</div>
+        <div class="pref-options pref-options-grid" data-pref="genres">
+          <label class="pref-option-chip"><input type="checkbox" value="pop"><span>流行</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="electronic"><span>电子</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="classical"><span>古典</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="rock"><span>摇滚</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="folk"><span>民谣</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="jazz"><span>爵士</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="r&b"><span>R&B</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="ambient"><span>氛围</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="lofi"><span>Lo-fi</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="hip-hop"><span>嘻哈</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="indie"><span>独立</span></label>
+          <label class="pref-option-chip"><input type="checkbox" value="cinematic"><span>影视配乐</span></label>
+        </div>
+      </div>
+      <!-- 问题4：能量偏好 -->
+      <div class="pref-q">
+        <div class="pref-q-title">④ 你平时更偏爱哪种能量感？</div>
+        <div class="pref-options" data-pref="energy">
+          <label class="pref-option"><input type="radio" name="pref-energy" value="low"><span>偏安静舒缓</span></label>
+          <label class="pref-option"><input type="radio" name="pref-energy" value="high"><span>偏动感激昂</span></label>
+          <label class="pref-option"><input type="radio" name="pref-energy" value="both" checked><span>看心情</span></label>
+        </div>
+      </div>
+    </div>
+    <div class="pref-survey-footer">
+      <button class="pref-skip-btn" onclick="skipPrefSurvey()">先跳过</button>
+      <button class="pref-submit-btn" onclick="submitPrefSurvey()">完成，开启推荐 ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- 功能导览覆盖层（注册后触发） -->
+<div id="tourOverlay" class="tour-overlay" style="display:none">
+  <div class="tour-spotlight" id="tourSpotlight"></div>
+  <div class="tour-tooltip" id="tourTooltip">
+    <div class="tour-tooltip-header">
+      <span class="tour-step-num" id="tourStepNum"></span>
+      <span class="tour-step-title" id="tourStepTitle"></span>
+      <button class="tour-close" onclick="endTour()">&times;</button>
+    </div>
+    <div class="tour-tooltip-body" id="tourStepBody"></div>
+    <div class="tour-tooltip-footer">
+      <span class="tour-progress" id="tourProgress"></span>
+      <div class="tour-nav">
+        <button class="tour-btn-skip" onclick="endTour()">跳过</button>
+        <button class="tour-btn-prev" id="tourBtnPrev" onclick="tourPrev()">上一步</button>
+        <button class="tour-btn-next" id="tourBtnNext" onclick="tourNext()">下一步</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=20260914d"></script>
+
+</body>
+</html>
